@@ -33,6 +33,12 @@ async function loadOfflineSeason(filePath: string): Promise<OfflineSeason> {
   return parsed as OfflineSeason;
 }
 
+function safeDate(input?: string | null): Date {
+  if (!input) return new Date('1900-01-01');
+  const parsed = new Date(input);
+  return Number.isNaN(parsed.getTime()) ? new Date('1900-01-01') : parsed;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const seasonArg = args.find((a) => !a.startsWith('--'));
@@ -79,12 +85,12 @@ async function main() {
         seasonId: seasonRecord.id,
         round: Number(race.round),
         raceName: race.raceName,
-        date: new Date(race.date),
+        date: safeDate(race.date),
         circuitId: circuit.id
       },
       update: {
         raceName: race.raceName,
-        date: new Date(race.date),
+        date: safeDate(race.date),
         circuitId: circuit.id
       }
     });
@@ -98,7 +104,7 @@ async function main() {
           code: res.Driver.code,
           givenName: res.Driver.givenName,
           familyName: res.Driver.familyName,
-          dateOfBirth: new Date(res.Driver.dateOfBirth),
+          dateOfBirth: safeDate(res.Driver.dateOfBirth),
           nationality: res.Driver.nationality
         },
         update: {
@@ -157,7 +163,7 @@ async function main() {
           code: res.Driver.code,
           givenName: res.Driver.givenName,
           familyName: res.Driver.familyName,
-          dateOfBirth: new Date(res.Driver.dateOfBirth),
+          dateOfBirth: safeDate(res.Driver.dateOfBirth),
           nationality: res.Driver.nationality
         },
         update: {
