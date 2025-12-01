@@ -34,17 +34,27 @@ async function loadOfflineSeason(filePath: string): Promise<OfflineSeason> {
   return parsed as OfflineSeason;
 }
 
-function resolveSeasonFromArgs(args: string[]): { season: number; offlineArgPath?: string } {
+function resolveSeasonFromArgs(args: string[]): { season: number; offlineArgPath?: string; autoSeason: boolean } {
   const seasonArg = args.find((a) => !a.startsWith('--'));
-  const season = seasonArg ? Number(seasonArg) : getDefaultFastf1Season();
   const offlineFlag = args.find((a) => a === '--offline' || a.startsWith('--offline='));
   const offlinePath = offlineFlag?.includes('=') ? offlineFlag.split('=')[1] : undefined;
+  const available = listOfflineSeasons();
+
+  if (!seasonArg) {
+    if (!available.length && !offlinePath) {
+      throw new Error(
+        'Geen lokale FastF1-export gevonden. Exporteer een seizoen (bijv. 2024) met "python scripts/export_fastf1.py 2024 --out data/fastf1/season-2024.json" of gebruik --offline <pad>.'
+      );
+    }
+  }
+
+  const season = seasonArg ? Number(seasonArg) : available[0] ?? getDefaultFastf1Season();
 
   if (!season || Number.isNaN(season)) {
     throw new Error('Geef een geldig jaartal op. Voorbeeld: npm run sync:season -- 2024');
   }
 
-  return { season, offlineArgPath: offlinePath };
+  return { season, offlineArgPath: offlinePath, autoSeason: !seasonArg };
 }
 
 function resolveOfflineSeasonPath(season: number, offlineArgPath?: string) {
@@ -81,9 +91,13 @@ function safeDate(input?: string | null): Date {
 
 async function main() {
   const args = process.argv.slice(2);
-  const { season, offlineArgPath } = resolveSeasonFromArgs(args);
+  const { season, offlineArgPath, autoSeason } = resolveSeasonFromArgs(args);
   const resolvedOffline = resolveOfflineSeasonPath(season, offlineArgPath);
   const offlineSeason = resolvedOffline ? await loadOfflineSeason(resolvedOffline.path) : undefined;
+
+  if (autoSeason) {
+    console.log(`Geen jaartal opgegeven. Gebruik automatisch seizoen ${offlineSeason?.season ?? season}.`);
+  }
 
   if (!offlineSeason) {
     const available = listOfflineSeasons();
@@ -252,6 +266,8 @@ main()
     console.error('Zorg dat er een FastF1-export bestand beschikbaar is (data/fastf1/season-<year>.json of --offline pad).');
     console.error('Voorbeeld: python scripts/export_fastf1.py 2024 --out data/fastf1/season-2024.json');
     console.error('Bundled snapshot: npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json');
+    const available = listOfflineSeasons();
+    console.error(`Lokale seizoenen: ${available.length ? available.join(', ') : 'geen gevonden'}`);
     console.error('Underlying error:', err instanceof Error ? err.message : err);
     const logPath = logErrorToFile(err);
     if (logPath) {
