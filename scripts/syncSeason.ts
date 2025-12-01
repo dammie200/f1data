@@ -147,7 +147,10 @@ async function main() {
 
 main()
   .catch((err) => {
-    console.error(err);
+    console.error('\nFailed to sync season data.');
+    console.error('This typically happens if the Ergast API is unreachable from your network or the base URL is blocked.');
+    console.error('You can override the API host with ERGAST_BASE_URL or retry on a different network.');
+    console.error('Underlying error:', err instanceof Error ? err.message : err);
     process.exit(1);
   })
   .finally(async () => {

@@ -28,6 +28,8 @@ npm run sync:season -- 2024
 
 You can re-run the script to refresh the same season; upserts keep entities in sync. The script fetches races, race results, and qualifying for the chosen season.
 
+> If the sync fails because the Ergast API is blocked from your network, set `ERGAST_BASE_URL` to an accessible mirror/host and rerun. The fetcher retries automatically, but a hard block will surface as a connection error.
+
 ### Development server
 
 ```bash

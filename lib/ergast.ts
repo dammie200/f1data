@@ -4,12 +4,35 @@ type ErgastResponse<T> = {
   MRData: T;
 };
 
-const BASE = 'https://ergast.com/api/f1';
+const BASE = process.env.ERGAST_BASE_URL ?? 'https://ergast.com/api/f1';
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { next: { revalidate: 60 * 60 } });
-  if (!res.ok) throw new Error(`Failed to fetch ${url}`);
-  return res.json();
+function formatFetchError(url: string, err: unknown) {
+  if (err instanceof Error) {
+    const cause = (err as any).cause;
+    const causeMsg = cause?.code ? ` (cause: ${cause.code}${cause.address ? ` ${cause.address}` : ''}${cause.port ? `:${cause.port}` : ''})` : '';
+    return `${err.message}${causeMsg}`;
+  }
+  return `Unknown error while fetching ${url}`;
+}
+
+async function fetchJson<T>(url: string, options: { retries?: number; retryDelayMs?: number } = {}): Promise<T> {
+  const { retries = 2, retryDelayMs = 400 } = options;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, { next: { revalidate: 60 * 60 } });
+      if (!res.ok) throw new Error(`Failed to fetch ${url} (status ${res.status})`);
+      return res.json();
+    } catch (err) {
+      lastError = err;
+      const isLastAttempt = attempt === retries;
+      if (isLastAttempt) break;
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    }
+  }
+
+  throw new Error(`Failed to fetch ${url} after ${retries + 1} attempt(s): ${formatFetchError(url, lastError)}`);
 }
 
 function mapDriver(d: any) {
