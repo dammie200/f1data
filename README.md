@@ -1,6 +1,6 @@
 # F1 Data Lab
 
-An in-depth Formula 1 analytics experience built with Next.js 14, TypeScript, Tailwind CSS, Recharts, and a SQLite cache powered by Prisma. Data now comes from a FastF1-style JSON feed by default (no toggles required). A small offline snapshot is bundled to explore the UI without network access.
+An in-depth Formula 1 analytics experience built with Next.js 14, TypeScript, Tailwind CSS, Recharts, and a SQLite cache powered by Prisma. Data now comes from **local FastF1 exports** (the FastF1 Python tool, not a hosted API). A small offline snapshot is bundled to explore the UI without network access.
 
 ## Getting started
 
@@ -18,19 +18,29 @@ npm run migrate
 
 This runs `prisma migrate dev` with the bundled `schema.prisma` that captures drivers, constructors, circuits, races, results, qualifying, lap times, pit stops, and standings.
 
-### Sync race data into SQLite (FastF1 feed)
+### Sync race data into SQLite (FastF1 export files)
 
-A helper script pulls a season from a FastF1-compatible feed and hydrates the cache:
+The app expects FastF1 data that you export yourself (FastF1 is a Python tool, not a web API). Workflow:
+
+1) Export a season to JSON with FastF1:
+
+```bash
+python scripts/export_fastf1.py 2024 --cache .fastf1-cache --out data/fastf1/season-2024.json
+```
+
+2) Hydrate SQLite from that export:
 
 ```bash
 npm run sync:season -- 2024
 ```
 
-You can re-run the script to refresh the same season; upserts keep entities in sync. The script fetches races, race results, and qualifying for the chosen season.
+You can re-run the sync to refresh the same season; upserts keep entities consistent. If you have another export path, pass it explicitly:
 
-The feed host defaults to `https://api.fastf1.dev/v1/`. Override it with `FASTF1_BASE_URL` if you run a mirror or a local cache.
+```bash
+npm run sync:season -- 2023 --offline data/fastf1/season-2023.json
+```
 
-If you’re offline or the FastF1 feed is blocked, seed from the bundled JSON snapshot:
+If you don’t have FastF1 installed or are offline, seed with the bundled snapshot instead:
 
 ```bash
 npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json
