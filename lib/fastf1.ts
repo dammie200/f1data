@@ -20,6 +20,15 @@ type OfflineRace = {
   LapTimes?: Record<string, any[]>;
 };
 
+function withCircuitFallback(race: OfflineRace): OfflineRace {
+  const circuit: OfflineRace['Circuit'] = race.Circuit ?? {
+    circuitId: race.raceName.toLowerCase().replace(/\s+/g, '_'),
+    circuitName: race.raceName,
+    Location: { locality: '', country: '' }
+  };
+  return { ...race, Circuit: circuit };
+}
+
 function readSeasonExport(season: number): OfflineSeason {
   const exported = path.join(EXPORT_DIR, `season-${season}.json`);
   if (fs.existsSync(exported)) {
@@ -36,18 +45,18 @@ function readSeasonExport(season: number): OfflineSeason {
 }
 
 export async function getSeasonRacesFastf1(season: number) {
-  return readSeasonExport(season).races;
+  return readSeasonExport(season).races.map(withCircuitFallback);
 }
 
 export async function getRaceResultsFastf1(season: number, round: number) {
   const seasonData = readSeasonExport(season);
-  const race = seasonData.races.find((r) => Number(r.round) === Number(round));
+  const race = seasonData.races.map(withCircuitFallback).find((r) => Number(r.round) === Number(round));
   return race?.Results ?? [];
 }
 
 export async function getQualifyingResultsFastf1(season: number, round: number) {
   const seasonData = readSeasonExport(season);
-  const race = seasonData.races.find((r) => Number(r.round) === Number(round));
+  const race = seasonData.races.map(withCircuitFallback).find((r) => Number(r.round) === Number(round));
   return race?.QualifyingResults ?? [];
 }
 
@@ -110,12 +119,12 @@ export async function getConstructorsFastf1(season?: number) {
 
 export async function getRaceFastf1(season: number, round: number) {
   const seasonData = readSeasonExport(season);
-  return seasonData.races.find((r) => Number(r.round) === Number(round));
+  return seasonData.races.map(withCircuitFallback).find((r) => Number(r.round) === Number(round));
 }
 
 export async function getLapTimesFastf1(season: number, round: number, driverId?: string) {
   const seasonData = readSeasonExport(season);
-  const race = seasonData.races.find((r) => Number(r.round) === Number(round));
+  const race = seasonData.races.map(withCircuitFallback).find((r) => Number(r.round) === Number(round));
   if (!race?.LapTimes) return [];
   const all = Object.entries(race.LapTimes).flatMap(([id, laps]) =>
     (laps as any[]).map((lap) => ({

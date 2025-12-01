@@ -52,15 +52,25 @@ async function main() {
   const seasonRecord = await prisma.season.upsert({ where: { year: resolvedSeason }, create: { year: resolvedSeason }, update: {} });
 
   for (const race of races) {
+    const circuitShape = race.Circuit ?? {
+      circuitId: race.raceName.toLowerCase().replace(/\s+/g, '_'),
+      circuitName: race.raceName,
+      Location: { locality: undefined, country: undefined }
+    };
+
     const circuit = await prisma.circuit.upsert({
-      where: { circuitId: race.Circuit.circuitId },
+      where: { circuitId: circuitShape.circuitId },
       create: {
-        circuitId: race.Circuit.circuitId,
-        name: race.Circuit.circuitName,
-        location: race.Circuit.Location?.locality,
-        country: race.Circuit.Location?.country
+        circuitId: circuitShape.circuitId,
+        name: circuitShape.circuitName,
+        location: circuitShape.Location?.locality,
+        country: circuitShape.Location?.country
       },
-      update: {}
+      update: {
+        name: circuitShape.circuitName,
+        location: circuitShape.Location?.locality,
+        country: circuitShape.Location?.country
+      }
     });
 
     const raceRecord = await prisma.race.upsert({
