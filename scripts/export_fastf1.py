@@ -52,18 +52,24 @@ def export_season(season: int, out_path: Path, cache: Path | None = None):
 
         results = []
         for row in session.results.itertuples():
+            # FastF1 versions differ slightly on column names. Try common fallbacks
+            # for nationality fields so exports remain resilient.
             driver = {
                 "driverId": str(row.DriverId),
                 "code": row.Abbreviation,
                 "givenName": row.FirstName,
                 "familyName": row.LastName,
                 "dateOfBirth": str(getattr(row, "DateOfBirth", "")),
-                "nationality": row.Nationality,
+                "nationality": getattr(row, "Nationality", None)
+                or getattr(row, "CountryCode", None)
+                or getattr(row, "Country", ""),
             }
             constructor = {
                 "constructorId": row.TeamName.lower().replace(" ", "_"),
                 "name": row.TeamName,
-                "nationality": row.TeamCountry,
+                "nationality": getattr(row, "TeamCountry", None)
+                or getattr(row, "TeamNationality", None)
+                or getattr(row, "Country", ""),
             }
             results.append(
                 {
@@ -96,12 +102,16 @@ def export_season(season: int, out_path: Path, cache: Path | None = None):
                     "givenName": row.FirstName,
                     "familyName": row.LastName,
                     "dateOfBirth": str(getattr(row, "DateOfBirth", "")),
-                    "nationality": row.Nationality,
+                    "nationality": getattr(row, "Nationality", None)
+                    or getattr(row, "CountryCode", None)
+                    or getattr(row, "Country", ""),
                 }
                 constructor = {
                     "constructorId": row.TeamName.lower().replace(" ", "_"),
                     "name": row.TeamName,
-                    "nationality": row.TeamCountry,
+                    "nationality": getattr(row, "TeamCountry", None)
+                    or getattr(row, "TeamNationality", None)
+                    or getattr(row, "Country", ""),
                 }
                 quali.append(
                     {
