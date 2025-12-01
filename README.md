@@ -28,7 +28,17 @@ npm run sync:season -- 2024
 
 You can re-run the script to refresh the same season; upserts keep entities in sync. The script fetches races, race results, and qualifying for the chosen season.
 
-> If the sync fails because the Ergast API is blocked from your network, set `ERGAST_BASE_URL` to an accessible mirror/host and rerun. The fetcher retries automatically, but a hard block will surface as a connection error.
+If the Ergast API is blocked from your network, you can either point to an alternate host or seed from an offline JSON snapshot:
+
+```bash
+# Override host
+ERGAST_BASE_URL=https://your-mirror.example.com/api/f1 npm run sync:season -- 2024
+
+# Use bundled offline sample (round 1 of 2024) to validate the app without network access
+npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json
+```
+
+The fetcher retries automatically, but a hard block will surface as a connection error; offline mode keeps the UI explorable in locked-down environments.
 
 ### Development server
 

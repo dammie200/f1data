@@ -1,14 +1,54 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 import { getSeasonRaces, getRaceResults, getQualifyingResults } from '../lib/ergast';
 import prisma from '../lib/prisma';
 
+type OfflineRace = {
+  season: string;
+  round: string;
+  raceName: string;
+  date: string;
+  Circuit: { circuitId: string; circuitName: string; Location?: { locality?: string; country?: string } };
+  Results?: any[];
+  QualifyingResults?: any[];
+};
+
+type OfflineSeason = {
+  season: number;
+  races: OfflineRace[];
+};
+
+async function loadOfflineSeason(filePath: string): Promise<OfflineSeason> {
+  const resolved = path.resolve(filePath);
+  if (!fs.existsSync(resolved)) {
+    throw new Error(`Offline file not found: ${resolved}`);
+  }
+  const raw = fs.readFileSync(resolved, 'utf-8');
+  const parsed = JSON.parse(raw);
+  if (!parsed?.season || !parsed?.races) {
+    throw new Error('Offline file must include { season, races }');
+  }
+  return parsed as OfflineSeason;
+}
+
 async function main() {
-  const seasonArg = process.argv[2];
-  if (!seasonArg) throw new Error('Usage: npm run sync:season -- <year>');
+  const args = process.argv.slice(2);
+  const seasonArg = args.find((a) => !a.startsWith('--'));
+  if (!seasonArg) throw new Error('Usage: npm run sync:season -- <year> [--offline path/to/file.json]');
+
+  const offlineFlag = args.find((a) => a === '--offline' || a.startsWith('--offline='));
+  const offlinePath = offlineFlag?.includes('=') ? offlineFlag.split('=')[1] : undefined;
   const season = Number(seasonArg);
 
-  const races = await getSeasonRaces(season);
-  const seasonRecord = await prisma.season.upsert({ where: { year: season }, create: { year: season }, update: {} });
+  const offlineSeason = offlinePath ? await loadOfflineSeason(offlinePath) : undefined;
+  if (offlineSeason && offlineSeason.season !== season) {
+    console.warn(`Offline file season ${offlineSeason.season} does not match requested ${season}; using offline season value.`);
+  }
+
+  const races = offlineSeason?.races ?? (await getSeasonRaces(season));
+  const resolvedSeason = offlineSeason?.season ?? season;
+  const seasonRecord = await prisma.season.upsert({ where: { year: resolvedSeason }, create: { year: resolvedSeason }, update: {} });
 
   for (const race of races) {
     const circuit = await prisma.circuit.upsert({
@@ -38,7 +78,7 @@ async function main() {
       }
     });
 
-    const results = await getRaceResults(season, race.round);
+    const results = offlineSeason ? race.Results ?? [] : await getRaceResults(season, race.round);
     for (const res of results) {
       const driver = await prisma.driver.upsert({
         where: { driverId: res.Driver.driverId },
@@ -97,7 +137,7 @@ async function main() {
       });
     }
 
-    const quali = await getQualifyingResults(season, race.round);
+    const quali = offlineSeason ? race.QualifyingResults ?? [] : await getQualifyingResults(season, race.round);
     for (const res of quali) {
       const driver = await prisma.driver.upsert({
         where: { driverId: res.Driver.driverId },
@@ -142,14 +182,15 @@ async function main() {
     }
   }
 
-  console.log(`Synced ${races.length} races for ${season}`);
+  console.log(`Synced ${races.length} races for ${resolvedSeason}${offlineSeason ? ' (offline source)' : ''}`);
 }
 
 main()
   .catch((err) => {
     console.error('\nFailed to sync season data.');
     console.error('This typically happens if the Ergast API is unreachable from your network or the base URL is blocked.');
-    console.error('You can override the API host with ERGAST_BASE_URL or retry on a different network.');
+    console.error('You can override the API host with ERGAST_BASE_URL, retry on a different network, or pass --offline <file>.');
+    console.error('Example offline seed: npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json');
     console.error('Underlying error:', err instanceof Error ? err.message : err);
     process.exit(1);
   })
