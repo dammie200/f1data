@@ -9,7 +9,7 @@ export default async function ConstructorPage({ params, searchParams }: { params
   const seasons = await getSeasons();
   const season = Number(searchParams.season ?? seasons[0]);
   const races = await getSeasonRaces(season);
-  const resultsPerRace = await Promise.all(races.map((race: any) => getRaceResults(season, race.round)));
+  const resultsPerRace = await Promise.all(races.map((race: any) => getRaceResults(season, race.round, race.sessionKey)));
   const teamResults = resultsPerRace.flat().filter((r: any) => (r.Constructor ?? r.constructor)?.constructorId === params.constructorId);
   const standings = await getConstructorStandings(season);
   const teamStanding = (standings as any[]).find((s) => (s.Constructor ?? s.constructor)?.constructorId === params.constructorId);

@@ -11,8 +11,8 @@ export default async function RacePage({ params }: { params: { year: string; rou
   const season = Number(params.year);
   const round = Number(params.round);
   const race = await getRace(season, round);
-  const results = await getRaceResults(season, round);
-  const qualifying = await getQualifyingResults(season, round);
+  const results = await getRaceResults(season, round, (race as any)?.sessionKey);
+  const qualifying = await getQualifyingResults(season, round, (race as any)?.sessionKey);
   const facts = funFactsFromRace({ results: results as any[], race });
 
   const movers = results

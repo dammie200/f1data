@@ -12,6 +12,7 @@ type OfflineRace = {
   Circuit: { circuitId: string; circuitName: string; Location?: { locality?: string; country?: string } };
   Results?: any[];
   QualifyingResults?: any[];
+  sessionKey?: number;
 };
 
 type OfflineSeason = {
@@ -78,7 +79,7 @@ async function main() {
       }
     });
 
-    const results = offlineSeason ? race.Results ?? [] : await getRaceResults(season, race.round);
+    const results = offlineSeason ? race.Results ?? [] : await getRaceResults(season, race.round, (race as any).sessionKey);
     for (const res of results) {
       const driver = await prisma.driver.upsert({
         where: { driverId: res.Driver.driverId },
@@ -137,7 +138,7 @@ async function main() {
       });
     }
 
-    const quali = offlineSeason ? race.QualifyingResults ?? [] : await getQualifyingResults(season, race.round);
+    const quali = offlineSeason ? race.QualifyingResults ?? [] : await getQualifyingResults(season, race.round, (race as any).sessionKey);
     for (const res of quali) {
       const driver = await prisma.driver.upsert({
         where: { driverId: res.Driver.driverId },

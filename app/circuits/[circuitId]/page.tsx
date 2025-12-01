@@ -8,7 +8,7 @@ export default async function CircuitPage({ params, searchParams }: { params: { 
   const season = Number(searchParams.season ?? seasons[0]);
   const races = await getSeasonRaces(season);
   const race = races.find((r: any) => (r.Circuit ?? r.circuit)?.circuitId === params.circuitId);
-  const results = race ? await getRaceResults(season, race.round) : [];
+  const results = race ? await getRaceResults(season, race.round, (race as any).sessionKey) : [];
 
   return (
     <div className="space-y-6">

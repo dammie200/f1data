@@ -29,7 +29,7 @@ export default async function SeasonPage({ params }: { params: { year: string } 
   const driverPoints: Record<string, number> = {};
 
   for (const race of races) {
-    const results = await getRaceResults(season, race.round);
+    const results = await getRaceResults(season, race.round, (race as any).sessionKey);
     results.forEach((res: any) => {
       const driver = res.Driver ?? res.driver;
       const key = driver.driverId;
@@ -46,7 +46,7 @@ export default async function SeasonPage({ params }: { params: { year: string } 
   // Competitiveness index: avg gap between P1 and P10 in qualifying
   const qualiGaps: { round: number; gap: number }[] = [];
   for (const race of races) {
-    const quali = await getQualifyingResults(season, race.round);
+    const quali = await getQualifyingResults(season, race.round, (race as any).sessionKey);
     const sorted = [...quali].sort((a: any, b: any) => Number(a.position ?? 99) - Number(b.position ?? 99));
     const p1 = toMillis(sorted[0]?.Q3 ?? sorted[0]?.Q2 ?? sorted[0]?.Q1);
     const p10 = toMillis(sorted[9]?.Q3 ?? sorted[9]?.Q2 ?? sorted[9]?.Q1);

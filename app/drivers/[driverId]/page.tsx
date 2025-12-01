@@ -10,8 +10,8 @@ export default async function DriverPage({ params, searchParams }: { params: { d
   const seasons = await getSeasons();
   const season = Number(searchParams.season ?? seasons[0]);
   const races = await getSeasonRaces(season);
-  const resultsPerRace = await Promise.all(races.map((race: any) => getRaceResults(season, race.round)));
-  const qualiPerRace = await Promise.all(races.map((race: any) => getQualifyingResults(season, race.round)));
+  const resultsPerRace = await Promise.all(races.map((race: any) => getRaceResults(season, race.round, race.sessionKey)));
+  const qualiPerRace = await Promise.all(races.map((race: any) => getQualifyingResults(season, race.round, race.sessionKey)));
 
   const driverResults = resultsPerRace.flat().filter((r: any) => (r.Driver ?? r.driver)?.driverId === params.driverId);
   const driverQuali = qualiPerRace.flat().filter((q: any) => (q.Driver ?? q.driver)?.driverId === params.driverId);
