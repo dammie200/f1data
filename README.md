@@ -8,6 +8,12 @@ An in-depth Formula 1 analytics experience built with Next.js 14, TypeScript, Ta
 npm install
 ```
 
+Install the FastF1 Python tooling used for data export (requires Python 3.10+):
+
+```bash
+python -m pip install -r scripts/requirements.txt
+```
+
 ### Database & Prisma
 
 Prisma uses SQLite by default (`prisma/dev.db`). To create the database and client types:
@@ -27,6 +33,8 @@ The app expects FastF1 data that you export yourself (FastF1 is a Python tool, n
 ```bash
 python scripts/export_fastf1.py 2024 --cache .fastf1-cache --out data/fastf1/season-2024.json
 ```
+
+If you see `ModuleNotFoundError: No module named 'fastf1'`, ensure you've installed the Python requirements from `scripts/requirements.txt` as shown above.
 
 2) Hydrate SQLite from that export:
 

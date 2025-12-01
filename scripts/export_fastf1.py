@@ -20,7 +20,13 @@ import json
 import sys
 from pathlib import Path
 
-import fastf1
+try:
+    import fastf1
+except ModuleNotFoundError as exc:  # pragma: no cover - guard for missing optional dependency
+    raise SystemExit(
+        "FastF1 is required to export data. Install Python deps with: "
+        "python -m pip install -r scripts/requirements.txt"
+    ) from exc
 
 
 def export_season(season: int, out_path: Path, cache: Path | None = None):
