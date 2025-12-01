@@ -4,7 +4,7 @@ import { LineTrend } from '@/components/charts/LineTrend';
 import { BarCompare } from '@/components/charts/BarCompare';
 import { SimpleTable } from '@/components/SimpleTable';
 import { funFactsFromSeason } from '@/lib/funFacts';
-import { getDriverStandings, getQualifyingResults, getRaceResults, getSeasonRaces } from '@/lib/ergast';
+import { getDriverStandings, getQualifyingResults, getRaceResults, getSeasonRaces } from '@/lib/data';
 import { FunFacts } from '@/components/FunFacts';
 
 function toMillis(time?: string | null) {

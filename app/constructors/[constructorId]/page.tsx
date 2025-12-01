@@ -3,7 +3,7 @@ import { ChartPanel } from '@/components/ChartPanel';
 import { LineTrend } from '@/components/charts/LineTrend';
 import { SimpleTable } from '@/components/SimpleTable';
 import { SeasonSelector } from '@/components/SeasonSelector';
-import { getConstructorStandings, getConstructors, getRaceResults, getSeasonRaces, getSeasons } from '@/lib/ergast';
+import { getConstructorStandings, getConstructors, getRaceResults, getSeasonRaces, getSeasons } from '@/lib/data';
 
 export default async function ConstructorPage({ params, searchParams }: { params: { constructorId: string }; searchParams: { season?: string } }) {
   const seasons = await getSeasons();

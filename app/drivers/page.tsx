@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { SeasonSelector } from '@/components/SeasonSelector';
-import { getDrivers, getSeasons } from '@/lib/ergast';
+import { getDrivers, getSeasons } from '@/lib/data';
 import { Card } from '@/components/Card';
 
 export default async function DriversPage({ searchParams }: { searchParams: { season?: string } }) {

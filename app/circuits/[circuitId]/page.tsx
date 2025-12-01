@@ -1,7 +1,7 @@
 import { Card } from '@/components/Card';
 import { SimpleTable } from '@/components/SimpleTable';
 import { SeasonSelector } from '@/components/SeasonSelector';
-import { getRaceResults, getSeasonRaces, getSeasons } from '@/lib/ergast';
+import { getRaceResults, getSeasonRaces, getSeasons } from '@/lib/data';
 
 export default async function CircuitPage({ params, searchParams }: { params: { circuitId: string }; searchParams: { season?: string } }) {
   const seasons = await getSeasons();

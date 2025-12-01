@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { SeasonSelector } from '@/components/SeasonSelector';
-import { getConstructors, getSeasons } from '@/lib/ergast';
+import { getConstructors, getSeasons } from '@/lib/data';
 import { Card } from '@/components/Card';
 
 export default async function ConstructorsPage({ searchParams }: { searchParams: { season?: string } }) {

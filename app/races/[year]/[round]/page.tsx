@@ -5,7 +5,7 @@ import { SimpleTable } from '@/components/SimpleTable';
 import { FunFacts } from '@/components/FunFacts';
 import { positionsGained } from '@/lib/analytics';
 import { funFactsFromRace } from '@/lib/funFacts';
-import { getQualifyingResults, getRace, getRaceResults } from '@/lib/ergast';
+import { getQualifyingResults, getRace, getRaceResults } from '@/lib/data';
 
 export default async function RacePage({ params }: { params: { year: string; round: string } }) {
   const season = Number(params.year);

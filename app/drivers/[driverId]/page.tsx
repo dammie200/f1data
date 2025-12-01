@@ -4,7 +4,7 @@ import { LineTrend } from '@/components/charts/LineTrend';
 import { SimpleTable } from '@/components/SimpleTable';
 import { SeasonSelector } from '@/components/SeasonSelector';
 import { positionsGained, qualifyingVsRace } from '@/lib/analytics';
-import { getQualifyingResults, getRaceResults, getSeasonRaces, getSeasons } from '@/lib/ergast';
+import { getQualifyingResults, getRaceResults, getSeasonRaces, getSeasons } from '@/lib/data';
 
 export default async function DriverPage({ params, searchParams }: { params: { driverId: string }; searchParams: { season?: string } }) {
   const seasons = await getSeasons();

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
-import { getSeasonRaces, getRaceResults, getQualifyingResults } from '../lib/ergast';
+import { getSeasonRaces, getRaceResults, getQualifyingResults } from '../lib/data';
 import prisma from '../lib/prisma';
 
 type OfflineRace = {
@@ -189,8 +189,8 @@ async function main() {
 main()
   .catch((err) => {
     console.error('\nFailed to sync season data.');
-    console.error('This typically happens if the Ergast API is unreachable from your network or the base URL is blocked.');
-    console.error('You can override the API host with ERGAST_BASE_URL, retry on a different network, or pass --offline <file>.');
+    console.error('This typically happens if the OpenF1 API is unreachable from your network.');
+    console.error('Retry on a different network or pass --offline <file>.');
     console.error('Example offline seed: npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json');
     console.error('Underlying error:', err instanceof Error ? err.message : err);
     process.exit(1);

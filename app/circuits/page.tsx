@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/Card';
-import { getSeasonRaces, getSeasons } from '@/lib/ergast';
+import { getSeasonRaces, getSeasons } from '@/lib/data';
 import { SeasonSelector } from '@/components/SeasonSelector';
 
 export default async function CircuitsPage({ searchParams }: { searchParams: { season?: string } }) {

@@ -5,7 +5,7 @@ import { ChartPanel } from '@/components/ChartPanel';
 import { LineTrend } from '@/components/charts/LineTrend';
 import { SimpleTable } from '@/components/SimpleTable';
 import { funFactsFromSeason } from '@/lib/funFacts';
-import { getConstructorStandings, getDriverStandings, getSeasonRaces, getSeasons } from '@/lib/ergast';
+import { getConstructorStandings, getDriverStandings, getSeasonRaces, getSeasons } from '@/lib/data';
 
 function normalizeDriverStanding(standing: any) {
   if ('driverId' in standing) {
