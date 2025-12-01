@@ -36,12 +36,18 @@ def export_season(season: int, out_path: Path, cache: Path | None = None):
 
     schedule = fastf1.get_event_schedule(season, include_testing=False)
 
+    def event_year(row):
+        """Return the season year for a schedule row with a compatible fallback."""
+        # FastF1 3.3+ exposes EventYear; older exports used Year. Default to the
+        # requested season as a final fallback so we never KeyError.
+        return row.get("EventYear") or row.get("Year") or season
+
     races = []
     for _, event in schedule.iterrows():
         if event.get('EventFormat') == 'testing':
             continue
 
-        session = fastf1.get_session(event['Year'], event['RoundNumber'], 'R')
+        session = fastf1.get_session(event_year(event), event['RoundNumber'], 'R')
         session.load(laps=False, weather=False, telemetry=False)
 
         results = []
@@ -80,7 +86,7 @@ def export_season(season: int, out_path: Path, cache: Path | None = None):
 
         quali = None
         try:
-            quali_session = fastf1.get_session(event['Year'], event['RoundNumber'], 'Q')
+            quali_session = fastf1.get_session(event_year(event), event['RoundNumber'], 'Q')
             quali_session.load(laps=False, weather=False, telemetry=False)
             quali = []
             for row in quali_session.results.itertuples():
@@ -111,7 +117,7 @@ def export_season(season: int, out_path: Path, cache: Path | None = None):
             pass  # leave quali as None/empty if the session is missing
 
         race_payload = {
-            "season": str(event['Year']),
+            "season": str(event_year(event)),
             "round": str(event['RoundNumber']),
             "raceName": event['EventName'],
             "date": str(event['EventDate']),
@@ -140,8 +146,19 @@ def main():
 
     try:
         export_season(args.season, args.out, cache=args.cache)
+    except KeyError as exc:
+        print(
+            "Failed to export season due to missing schedule column:",
+            exc,
+            "(expected FastF1 schedule columns like EventYear/RoundNumber).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     except Exception as exc:
-        print("Failed to export season", exc, file=sys.stderr)
+        print(
+            f"Failed to export season {args.season}: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
 
