@@ -4,6 +4,25 @@ import path from 'path';
 const EXPORT_DIR = path.join(process.cwd(), 'data', 'fastf1');
 const SNAPSHOT_PATH = path.join(process.cwd(), 'fixtures', 'sample-season-2024.json');
 
+export function listOfflineSeasons(): number[] {
+  const exportedYears = (fs.existsSync(EXPORT_DIR) ? fs.readdirSync(EXPORT_DIR) : [])
+    .map((file) => {
+      const match = file.match(/^season-(\d{4})\.json$/);
+      return match ? Number(match[1]) : undefined;
+    })
+    .filter((year): year is number => !!year);
+
+  const snapshotYears = fs.existsSync(SNAPSHOT_PATH) ? [2024] : [];
+
+  return Array.from(new Set([...exportedYears, ...snapshotYears])).sort((a, b) => b - a);
+}
+
+export function getDefaultFastf1Season(): number {
+  const available = listOfflineSeasons();
+  if (available.length) return available[0];
+  return new Date().getFullYear();
+}
+
 type OfflineSeason = {
   season: number;
   races: OfflineRace[];
@@ -39,8 +58,11 @@ function readSeasonExport(season: number): OfflineSeason {
     return JSON.parse(fs.readFileSync(SNAPSHOT_PATH, 'utf-8')) as OfflineSeason;
   }
 
+  const available = listOfflineSeasons();
+  const availableText = available.length ? `Beschikbare exports: ${available.join(', ')}` : 'Geen exports gevonden.';
+
   throw new Error(
-    `Geen FastF1-export gevonden voor ${season}. Draai \"python scripts/export_fastf1.py ${season} --out data/fastf1/season-${season}.json\" om data aan te leveren.`
+    `Geen FastF1-export gevonden voor ${season}. Draai \"python scripts/export_fastf1.py ${season} --out data/fastf1/season-${season}.json\" om data aan te leveren. ${availableText}`
   );
 }
 
@@ -99,7 +121,7 @@ export async function getConstructorStandingsFastf1(season: number) {
 }
 
 export async function getDriversFastf1(season?: number) {
-  const seasonData = readSeasonExport(season ?? new Date().getFullYear());
+  const seasonData = readSeasonExport(season ?? getDefaultFastf1Season());
   const drivers = new Map<string, any>();
   seasonData.races.forEach((race) => {
     race.Results?.forEach((res) => drivers.set(res.Driver.driverId, res.Driver));
@@ -109,7 +131,7 @@ export async function getDriversFastf1(season?: number) {
 }
 
 export async function getConstructorsFastf1(season?: number) {
-  const seasonData = readSeasonExport(season ?? new Date().getFullYear());
+  const seasonData = readSeasonExport(season ?? getDefaultFastf1Season());
   const teams = new Map<string, any>();
   seasonData.races.forEach((race) => {
     race.Results?.forEach((res) => teams.set(res.Constructor.constructorId, res.Constructor));
