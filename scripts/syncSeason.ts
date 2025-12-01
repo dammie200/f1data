@@ -189,7 +189,7 @@ async function main() {
 main()
   .catch((err) => {
     console.error('\nFailed to sync season data.');
-    console.error('This typically happens if the OpenF1 API is unreachable from your network.');
+    console.error('This typically happens if the FastF1-compatible feed is unreachable from your network.');
     console.error('Retry on a different network or pass --offline <file>.');
     console.error('Example offline seed: npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json');
     console.error('Underlying error:', err instanceof Error ? err.message : err);

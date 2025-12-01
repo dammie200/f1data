@@ -1,17 +1,17 @@
 import prisma from './prisma';
 import {
-  getSeasonRacesOpenF1,
-  getRaceResultsOpenF1,
-  getQualifyingResultsOpenF1,
-  getLapTimesOpenF1,
-  getDriversOpenF1,
-  getConstructorsOpenF1,
-  getDriverStandingsOpenF1,
-  getConstructorStandingsOpenF1,
-  getRaceOpenF1
-} from './openf1';
+  getSeasonRacesFastf1,
+  getRaceResultsFastf1,
+  getQualifyingResultsFastf1,
+  getLapTimesFastf1,
+  getDriversFastf1,
+  getConstructorsFastf1,
+  getDriverStandingsFastf1,
+  getConstructorStandingsFastf1,
+  getRaceFastf1
+} from './fastf1';
 
-const OPENF1_START_YEAR = 2018;
+const FASTF1_START_YEAR = 2018;
 
 function distinctYears(values: number[]) {
   return Array.from(new Set(values)).sort((a, b) => b - a);
@@ -22,7 +22,7 @@ export async function getSeasons() {
   const cachedYears = cached.map((s) => s.year);
 
   const currentYear = new Date().getFullYear();
-  const defaultYears = Array.from({ length: currentYear - OPENF1_START_YEAR + 1 }, (_, i) => currentYear - i);
+  const defaultYears = Array.from({ length: currentYear - FASTF1_START_YEAR + 1 }, (_, i) => currentYear - i);
 
   return distinctYears([...cachedYears, ...defaultYears]);
 }
@@ -30,7 +30,7 @@ export async function getSeasons() {
 export async function getSeasonRaces(season: number) {
   const dbSeason = await prisma.season.findUnique({ where: { year: season }, include: { races: { include: { circuit: true } } } });
   if (dbSeason?.races.length) return dbSeason.races;
-  return getSeasonRacesOpenF1(season);
+  return getSeasonRacesFastf1(season);
 }
 
 export async function getRaceResults(season: number, round: number, sessionKey?: number) {
@@ -39,13 +39,13 @@ export async function getRaceResults(season: number, round: number, sessionKey?:
     include: { driver: true, constructor: true, race: { include: { circuit: true } } }
   });
   if (cache.length) return cache;
-  return getRaceResultsOpenF1(season, round, sessionKey);
+  return getRaceResultsFastf1(season, round, sessionKey);
 }
 
 export async function getQualifyingResults(season: number, round: number, sessionKey?: number) {
   const cache = await prisma.qualifyingResult.findMany({ where: { race: { season: { year: season }, round } }, include: { driver: true, constructor: true } });
   if (cache.length) return cache;
-  return getQualifyingResultsOpenF1(season, round, sessionKey);
+  return getQualifyingResultsFastf1(season, round, sessionKey);
 }
 
 export async function getLapTimes(season: number, round: number, driverId?: string) {
@@ -54,20 +54,20 @@ export async function getLapTimes(season: number, round: number, driverId?: stri
     include: { driver: true }
   });
   if (cache.length) return cache;
-  return getLapTimesOpenF1(season, round, driverId);
+  return getLapTimesFastf1(season, round, driverId);
 }
 
 export async function getDrivers(season?: number) {
   const whereSeason = season ? { season: { year: season } } : undefined;
   const cache = await prisma.driver.findMany({ where: whereSeason });
   if (cache.length) return cache;
-  return getDriversOpenF1(season);
+  return getDriversFastf1(season);
 }
 
 export async function getConstructors(season?: number) {
   const cache = await prisma.constructor.findMany();
   if (cache.length) return cache;
-  return getConstructorsOpenF1(season);
+  return getConstructorsFastf1(season);
 }
 
 export async function getDriverStandings(season: number) {
@@ -78,7 +78,7 @@ export async function getDriverStandings(season: number) {
     take: 20
   });
   if (cache.length) return cache;
-  return getDriverStandingsOpenF1(season);
+  return getDriverStandingsFastf1(season);
 }
 
 export async function getConstructorStandings(season: number) {
@@ -89,11 +89,11 @@ export async function getConstructorStandings(season: number) {
     take: 20
   });
   if (cache.length) return cache;
-  return getConstructorStandingsOpenF1(season);
+  return getConstructorStandingsFastf1(season);
 }
 
 export async function getRace(season: number, round: number) {
   const cache = await prisma.race.findFirst({ where: { season: { year: season }, round }, include: { circuit: true, season: true } });
   if (cache) return cache;
-  return getRaceOpenF1(season, round);
+  return getRaceFastf1(season, round);
 }
