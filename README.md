@@ -36,22 +36,23 @@ python scripts/export_fastf1.py 2024 --cache .fastf1-cache --out data/fastf1/sea
 
 If you see `ModuleNotFoundError: No module named 'fastf1'`, ensure you've installed the Python requirements from `scripts/requirements.txt` as shown above.
 
-2) Hydrate SQLite from that export:
+2) Hydrate SQLite from that export with **one input** (the year). The script auto-fills everything else:
 
 ```bash
 npm run sync:season -- 2024
 ```
 
-You can re-run the sync to refresh the same season; upserts keep entities consistent. If you have another export path, pass it explicitly:
+What happens automatically now:
+
+- Looks for `data/fastf1/season-<year>.json`
+- If missing, falls back to the bundled snapshot (`fixtures/sample-season-2024.json`)
+- Lists which seasons are available so you immediately know what the app can load
+- Writes any fatal error details to `logs/sync-error.log` so you can share a single file when something fails
+
+You can re-run the sync to refresh the same season; upserts keep entities consistent. If you really need another export path, you can still pass it explicitly:
 
 ```bash
 npm run sync:season -- 2023 --offline data/fastf1/season-2023.json
-```
-
-If you don’t have FastF1 installed or are offline, seed with the bundled snapshot instead:
-
-```bash
-npm run sync:season -- 2024 --offline fixtures/sample-season-2024.json
 ```
 
 ### Development server
