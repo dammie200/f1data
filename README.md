@@ -36,9 +36,12 @@ python scripts/export_fastf1.py 2024 --cache .fastf1-cache --out data/fastf1/sea
 
 If you see `ModuleNotFoundError: No module named 'fastf1'`, ensure you've installed the Python requirements from `scripts/requirements.txt` as shown above.
 
-2) Hydrate SQLite from that export with **one input** (the year). The script auto-fills everything else:
+2) Hydrate SQLite from that export with **one input** (the year). The script auto-fills everything else. If you want the absólute minimum
+input, just run it with no args and it will pick the latest local export or the bundled snapshot:
 
 ```bash
+npm run sync:season
+# of, expliciet jaartal meegeven:
 npm run sync:season -- 2024
 ```
 
