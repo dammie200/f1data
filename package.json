@@ -9,7 +9,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "migrate": "prisma migrate dev --name init",
-    "sync:season": "ts-node --transpile-only scripts/syncSeason.ts"
+    "sync:season": "ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/syncSeason.ts"
   },
   "dependencies": {
     "@prisma/client": "5.16.1",
