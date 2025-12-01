@@ -12,7 +12,7 @@ datasource db {
 model Driver {
   id           Int      @id @default(autoincrement())
   driverId     String   @unique
-  code         String?  
+  code         String?
   givenName    String
   familyName   String
   dateOfBirth  DateTime
@@ -21,6 +21,7 @@ model Driver {
   lapTimes     LapTime[]
   standings    DriverStanding[]
   qualifying   QualifyingResult[]
+  pitStops     PitStop[]
 }
 
 model Constructor {
@@ -30,6 +31,7 @@ model Constructor {
   nationality  String?
   results      Result[]
   standings    ConstructorStanding[]
+  qualifying   QualifyingResult[]
 }
 
 model Circuit {
