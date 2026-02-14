@@ -1,0 +1,155 @@
+// Prisma schema capturing Ergast data cached locally
+// Simplified but covers key entities.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Driver {
+  id           Int      @id @default(autoincrement())
+  driverId     String   @unique
+  code         String?
+  givenName    String
+  familyName   String
+  dateOfBirth  DateTime
+  nationality  String
+  results      Result[]
+  lapTimes     LapTime[]
+  standings    DriverStanding[]
+  qualifying   QualifyingResult[]
+  pitStops     PitStop[]
+}
+
+model Constructor {
+  id           Int      @id @default(autoincrement())
+  constructorId String  @unique
+  name         String
+  nationality  String?
+  results      Result[]
+  standings    ConstructorStanding[]
+  qualifying   QualifyingResult[]
+}
+
+model Circuit {
+  id           Int      @id @default(autoincrement())
+  circuitId    String   @unique
+  name         String
+  location     String?
+  country      String?
+  races        Race[]
+}
+
+model Season {
+  id      Int    @id @default(autoincrement())
+  year    Int    @unique
+  races   Race[]
+}
+
+model Race {
+  id          Int       @id @default(autoincrement())
+  season      Season    @relation(fields: [seasonId], references: [id])
+  seasonId    Int
+  round       Int
+  raceName    String
+  date        DateTime
+  circuit     Circuit   @relation(fields: [circuitId], references: [id])
+  circuitId   Int
+  results     Result[]
+  lapTimes    LapTime[]
+  pitStops    PitStop[]
+  qualifying  QualifyingResult[]
+  driverStandings DriverStanding[]
+  constructorStandings ConstructorStanding[]
+
+  @@unique([seasonId, round])
+}
+
+model Result {
+  id           Int      @id @default(autoincrement())
+  race         Race     @relation(fields: [raceId], references: [id])
+  raceId       Int
+  driver       Driver   @relation(fields: [driverId], references: [id])
+  driverId     Int
+  constructor  Constructor @relation(fields: [constructorId], references: [id])
+  constructorId Int
+  position     Int?
+  grid         Int?
+  laps         Int?
+  status       String?
+  points       Float?
+  time         String?
+  fastestLapRank Int?
+  fastestLapTime String?
+
+  @@unique([raceId, driverId])
+}
+
+model QualifyingResult {
+  id             Int     @id @default(autoincrement())
+  race           Race    @relation(fields: [raceId], references: [id])
+  raceId         Int
+  driver         Driver  @relation(fields: [driverId], references: [id])
+  driverId       Int
+  constructor    Constructor @relation(fields: [constructorId], references: [id])
+  constructorId  Int
+  position       Int?
+  q1             String?
+  q2             String?
+  q3             String?
+
+  @@unique([raceId, driverId])
+}
+
+model LapTime {
+  id          Int      @id @default(autoincrement())
+  race        Race     @relation(fields: [raceId], references: [id])
+  raceId      Int
+  driver      Driver   @relation(fields: [driverId], references: [id])
+  driverId    Int
+  lap         Int
+  position    Int?
+  time        String
+  milliseconds Int?
+
+  @@index([raceId, driverId, lap])
+}
+
+model PitStop {
+  id          Int      @id @default(autoincrement())
+  race        Race     @relation(fields: [raceId], references: [id])
+  raceId      Int
+  driver      Driver   @relation(fields: [driverId], references: [id])
+  driverId    Int
+  stop        Int
+  lap         Int
+  time        String?
+  duration    String?
+
+  @@index([raceId, driverId])
+}
+
+model DriverStanding {
+  id          Int      @id @default(autoincrement())
+  race        Race     @relation(fields: [raceId], references: [id])
+  raceId      Int
+  driver      Driver   @relation(fields: [driverId], references: [id])
+  driverId    Int
+  position    Int
+  points      Float
+  wins        Int
+}
+
+model ConstructorStanding {
+  id          Int      @id @default(autoincrement())
+  race        Race     @relation(fields: [raceId], references: [id])
+  raceId      Int
+  constructor Constructor @relation(fields: [constructorId], references: [id])
+  constructorId Int
+  position    Int
+  points      Float
+  wins        Int
+}
